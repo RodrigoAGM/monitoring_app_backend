@@ -1,0 +1,39 @@
+{
+  "name": "monitoring_app_backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/RodrigoAGM/monitoring_app_backend.git",
+  "author": "RodrigoAGM <rod-gm@hotmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint src --ext .ts",
+    "build": "tsc",
+    "start": "node ./dist/index.js",
+    "dev": "nodemon"
+  },
+  "dependencies": {
+    "@prisma/client": "^3.0.2",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "prisma": "^3.0.2",
+    "typescript": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.1",
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
+    "@types/morgan": "^1.9.3",
+    "@types/node": "^16.9.1",
+    "@typescript-eslint/eslint-plugin": "^4.31.0",
+    "@typescript-eslint/parser": "^4.31.0",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.24.2",
+    "nodemon": "^2.0.12",
+    "ts-node": "^10.2.1"
+  }
+}
