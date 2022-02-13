@@ -1,4 +1,4 @@
-import { UserRole } from '../utils/enums';
+import { Role } from '.prisma/client';
 
 export type Result<T> = {
   error?: Error;
@@ -11,7 +11,7 @@ export type Result<T> = {
 export type Payload = {
   id: number,
   username: string,
-  role: UserRole,
+  role: Role,
   iat?: number,
   exp?: number
 }

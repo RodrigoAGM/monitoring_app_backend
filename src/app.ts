@@ -4,6 +4,7 @@ import Cors from 'cors';
 import { json } from 'body-parser';
 import { config } from 'dotenv';
 import handleError from './middleware/error.middleware';
+import { authApi } from './components/auth/api/auth.api';
 
 export default class App {
   private app: Application;
@@ -30,7 +31,7 @@ export default class App {
     this.app.get('/', json(), (req, res) => {
       res.send('Hello World!');
     });
-
+    this.app.use('/auth', json(), authApi);
     this.app.use(handleError);
   }
 

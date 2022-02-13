@@ -50,5 +50,7 @@ rules: {
     'no-underscore-dangle': 'off',
     'no-param-reassign': 'off',
     'import/prefer-default-export': 'off',
-    'class-methods-use-this': 'off'
+    'import/no-extraneous-dependencies': 'off',
+    'class-methods-use-this': 'off',
+    'consistent-return': 'off',
 }
