@@ -1,10 +1,23 @@
 import { Router } from 'express';
-import { handleRegisterDoctor, handleRegisterPatient } from '../controller/auth.controller';
+import {
+  handleDoctorSignIn,
+  handlePatientSignIn,
+  handleRegisterDoctor,
+  handleRegisterPatient,
+  handleSignOut,
+} from '../controller/auth.controller';
 
 const router = Router();
 
-// Register
-router.post('/register/patient', handleRegisterPatient);
-router.post('/register/doctor', handleRegisterDoctor);
+// SignUp
+router.post('/signup/patient', handleRegisterPatient);
+router.post('/signup/doctor', handleRegisterDoctor);
+
+// SignIn
+router.post('/signin/patient', handlePatientSignIn);
+router.post('/signin/doctor', handleDoctorSignIn);
+
+// SignOut
+router.delete('/signout/:refreshToken', handleSignOut);
 
 export { router as authApi };

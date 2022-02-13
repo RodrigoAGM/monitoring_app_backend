@@ -1,10 +1,15 @@
 import {
   Doctor, Patient, Role, User,
 } from '.prisma/client';
-import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime';
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime';
 import bcrypt from 'bcrypt';
 import AppError from '../../../error/app.error';
 import { Result } from '../../../types/types';
+import { manager } from '../../../utils/prisma.manager';
+import { tokenManager } from '../../../utils/token.manager';
 import { UserService } from '../../user/service/user.service';
 
 const userService = new UserService();
@@ -64,9 +69,27 @@ export class AuthService {
       const date = new Date(doctor.birthdate);
       doctor.birthdate = date;
 
-      const res = await this.register({ user, doctor });
+      const registerRes = await this.register({ user, doctor });
 
-      return Promise.resolve({ success: true, data: res.data });
+      // Create tokens
+      const userTokens = await tokenManager.createTokens(user);
+
+      // Save user tokens
+      await manager.client.refreshToken.create({
+        data: {
+          token: userTokens.token,
+          refreshToken: userTokens.refreshToken,
+        },
+      });
+
+      // Create response object
+      const res = {
+        ...registerRes.data!,
+        token: userTokens.token,
+        refreshToken: userTokens.refreshToken,
+      };
+
+      return Promise.resolve({ success: true, data: res });
     } catch (error) {
       if (error instanceof AppError) {
         return Promise.reject(error);
@@ -91,15 +114,97 @@ export class AuthService {
       const date = new Date(patient.birthdate);
       patient.birthdate = date;
 
-      const res = await this.register({ user, patient });
+      // Register patient
+      const registerRes = await this.register({ user, patient });
 
-      return Promise.resolve({ success: true, data: res.data });
+      // Create tokens
+      const userTokens = await tokenManager.createTokens(user);
+
+      // Save user tokens
+      await manager.client.refreshToken.create({
+        data: {
+          token: userTokens.token,
+          refreshToken: userTokens.refreshToken,
+        },
+      });
+
+      // Create response object
+      const res = {
+        ...registerRes.data!,
+        token: userTokens.token,
+        refreshToken: userTokens.refreshToken,
+      };
+
+      return Promise.resolve({ success: true, data: res });
     } catch (error) {
       if (error instanceof AppError) {
         return Promise.reject(error);
       }
       return Promise.reject(new AppError({
         message: 'Error al registrar paciente.',
+        statusCode: 500,
+      }));
+    }
+  }
+
+  async login(identification: string, password: string, role: Role): Promise<Result<User>> {
+    try {
+      const user = await manager.client.user.findUnique({ where: { identification } });
+
+      if (user?.role !== role) {
+        return Promise.reject(new AppError({
+          message: 'El usuario no tiene el rol requerido.',
+          statusCode: 400,
+        }));
+      }
+
+      const isValid = await bcrypt.compare(password, user.password);
+
+      if (!isValid) {
+        return Promise.reject(new AppError({
+          message: 'La contraseña es incorrecta.',
+          statusCode: 400,
+        }));
+      }
+
+      const userTokens = await tokenManager.createTokens(user);
+
+      await manager.client.refreshToken.create({
+        data: {
+          token: userTokens.token,
+          refreshToken: userTokens.refreshToken,
+        },
+      });
+
+      const res = {
+        ...user,
+        token: userTokens.token,
+        refreshToken: userTokens.refreshToken,
+      };
+
+      return Promise.resolve({ success: true, data: res });
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({
+        message: 'Error al iniciar sesión.',
+        statusCode: 500,
+      }));
+    }
+  }
+
+  async logout(refreshToken: string): Promise<Result<String>> {
+    try {
+      await manager.client.refreshToken.delete({ where: { refreshToken } });
+
+      return Promise.resolve({ success: true, data: 'Sesión cerrada correctamente!' });
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({
+        message: 'Error al cerrar sesión.',
         statusCode: 500,
       }));
     }

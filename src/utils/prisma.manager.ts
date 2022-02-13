@@ -11,10 +11,10 @@ class PrismaManager {
     this.client = new PrismaClient({
       rejectOnNotFound: {
         findFirst: {
-          User: () => new AppError({ message: 'Usuario no encontrado.', statusCode: 404 }),
+          User: () => new AppError({ message: 'El usuario no existe.', statusCode: 404 }),
         },
         findUnique: {
-          User: () => new AppError({ message: 'Usuario no encontrado.', statusCode: 404 }),
+          User: () => new AppError({ message: 'El usuario no existe.', statusCode: 404 }),
         },
       },
     });

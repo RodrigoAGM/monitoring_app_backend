@@ -141,3 +141,12 @@ model PriorityType {
   name           String
   MonitoringPlan MonitoringPlan[]
 }
+
+model RefreshToken {
+  token        String
+  refreshToken String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@id([refreshToken])
+}

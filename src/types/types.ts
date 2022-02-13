@@ -10,8 +10,13 @@ export type Result<T> = {
 // Interface used to parse payload from token
 export type Payload = {
   id: number,
-  username: string,
+  identification: string,
   role: Role,
   iat?: number,
   exp?: number
+}
+
+export type UserTokens = {
+  token: string;
+  refreshToken: string;
 }
