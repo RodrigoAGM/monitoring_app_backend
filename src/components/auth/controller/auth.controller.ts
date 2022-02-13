@@ -57,3 +57,13 @@ export async function handleSignOut(req: Request, res: Response, next: NextFunct
     next(error);
   }
 }
+
+export async function handleRefreshToken(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { token, refreshToken } = req.body;
+    const data = await authService.refreshToken({ token, refreshToken });
+    res.status(200).send(clearData(data));
+  } catch (error) {
+    next(error);
+  }
+}

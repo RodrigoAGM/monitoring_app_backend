@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   handleDoctorSignIn,
   handlePatientSignIn,
+  handleRefreshToken,
   handleRegisterDoctor,
   handleRegisterPatient,
   handleSignOut,
@@ -19,5 +20,8 @@ router.post('/signin/doctor', handleDoctorSignIn);
 
 // SignOut
 router.delete('/signout/:refreshToken', handleSignOut);
+
+// Token
+router.post('/token/refresh', handleRefreshToken);
 
 export { router as authApi };

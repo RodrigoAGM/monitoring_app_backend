@@ -7,7 +7,7 @@ import {
 } from '@prisma/client/runtime';
 import bcrypt from 'bcrypt';
 import AppError from '../../../error/app.error';
-import { Result } from '../../../types/types';
+import { Result, UserTokens } from '../../../types/types';
 import { manager } from '../../../utils/prisma.manager';
 import { tokenManager } from '../../../utils/token.manager';
 import { UserService } from '../../user/service/user.service';
@@ -205,6 +205,40 @@ export class AuthService {
       }
       return Promise.reject(new AppError({
         message: 'Error al cerrar sesión.',
+        statusCode: 500,
+      }));
+    }
+  }
+
+  async refreshToken(userTokens: UserTokens): Promise<Result<UserTokens>> {
+    try {
+      const tokens = await manager.client.refreshToken.findUnique({
+        where: { refreshToken: userTokens.refreshToken },
+      });
+
+      if (!tokens) {
+        return Promise.reject(new AppError({
+          message: 'El token de refresco no existe.',
+          statusCode: 404,
+        }));
+      }
+
+      const refreshed = await tokenManager.refreshToken(userTokens.refreshToken);
+
+      await manager.client.refreshToken.update({
+        where: { refreshToken: userTokens.refreshToken },
+        data: { token: refreshed },
+      });
+
+      userTokens.token = refreshed;
+
+      return Promise.resolve({ success: true, data: userTokens });
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({
+        message: 'Error al refrescar token.',
         statusCode: 500,
       }));
     }
