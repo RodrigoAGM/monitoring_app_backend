@@ -23,7 +23,7 @@ export class TokenManager {
         role: user.role,
       };
 
-      const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15h' });
+      const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '24h' });
       const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
 
       return Promise.resolve({ token, refreshToken });

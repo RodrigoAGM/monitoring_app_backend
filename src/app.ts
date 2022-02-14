@@ -5,6 +5,7 @@ import { json } from 'body-parser';
 import { config } from 'dotenv';
 import handleError from './middleware/error.middleware';
 import { authApi } from './components/auth/api/auth.api';
+import { userApi } from './components/user/api/user.api';
 
 export default class App {
   private app: Application;
@@ -31,6 +32,7 @@ export default class App {
     this.app.get('/', json(), (req, res) => {
       res.send('Hello World!');
     });
+    this.app.use('/user', json(), userApi);
     this.app.use('/auth', json(), authApi);
     this.app.use(handleError);
   }

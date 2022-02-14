@@ -149,7 +149,10 @@ export class AuthService {
 
   async login(identification: string, password: string, role: Role): Promise<Result<User>> {
     try {
-      const user = await manager.client.user.findUnique({ where: { identification } });
+      const user = await manager.client.user.findUnique({
+        where: { identification },
+        include: { patient: true, doctor: true },
+      });
 
       if (user?.role !== role) {
         return Promise.reject(new AppError({

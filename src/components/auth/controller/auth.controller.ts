@@ -48,6 +48,16 @@ export async function handleDoctorSignIn(req: Request, res: Response, next: Next
   }
 }
 
+export async function handleAdminSignIn(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { identification, password } = req.body;
+    const data = await authService.login(identification, password, Role.ADMIN);
+    res.status(200).send(clearData(data));
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function handleSignOut(req: Request, res: Response, next: NextFunction) {
   try {
     const { refreshToken } = req.params;
