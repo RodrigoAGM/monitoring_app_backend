@@ -4,6 +4,7 @@ import AppError from '../../../error/app.error';
 import { CRUDService } from '../../../interface/crud.service.interface';
 import { Result } from '../../../types/types';
 import { manager } from '../../../utils/prisma.manager';
+import { EmergencyTypeValidator } from '../validator/emergency.type.validator';
 
 export class EmergencyTypeService implements CRUDService<EmergencyType> {
   async get(id: number): Promise<Result<EmergencyType>> {
@@ -69,6 +70,9 @@ export class EmergencyTypeService implements CRUDService<EmergencyType> {
 
   async update(id: number, name: string): Promise<Result<EmergencyType>> {
     try {
+      // Check if emergency type exist
+      await EmergencyTypeValidator.checkIfEmergencyExist(id);
+
       const emergencyType = await manager.client.emergencyType.update({
         data: { name },
         where: { id },

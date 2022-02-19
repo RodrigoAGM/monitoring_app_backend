@@ -5,6 +5,7 @@ import { authenticateRole } from '../../../middleware/role.middleware';
 import {
   handleGetSelf,
   handleFindPatient,
+  handleUpdateUser,
 } from '../controller/user.controller';
 
 const router = Router();
@@ -17,5 +18,8 @@ router.get(
   authenticateRole([Role.ADMIN, Role.DOCTOR]),
   handleFindPatient
 );
+
+// Update
+router.put('/:id', authenticateToken, handleUpdateUser);
 
 export { router as userApi };

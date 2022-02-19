@@ -53,4 +53,5 @@ rules: {
     'import/no-extraneous-dependencies': 'off',
     'class-methods-use-this': 'off',
     'consistent-return': 'off',
+    'default-case': 'off',
 }

@@ -24,3 +24,14 @@ export async function handleFindPatient(req: Request, res: Response, next: NextF
     next(error);
   }
 }
+
+export async function handleUpdateUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = req.body;
+    const { id } = req.params;
+    const data = await userService.updateUser(Number(id), user, req.user);
+    res.status(200).send(clearData(data));
+  } catch (error) {
+    next(error);
+  }
+}
