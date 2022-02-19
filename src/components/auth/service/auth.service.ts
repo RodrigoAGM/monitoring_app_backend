@@ -10,6 +10,7 @@ import AppError from '../../../error/app.error';
 import { Result, UserTokens } from '../../../types/types';
 import { manager } from '../../../utils/prisma.manager';
 import { tokenManager } from '../../../utils/token.manager';
+import { MedicalCenterValidator } from '../../medicalCenter/validator/medical.center.validator';
 import { UserService } from '../../user/service/user.service';
 
 const userService = new UserService();
@@ -65,8 +66,23 @@ export class AuthService {
         }));
       }
 
+      // Check if medical center exist
+      if (!doctor.medicalCenterId) {
+        return Promise.reject(new AppError({
+          message: 'No se incluyo un id de centro médico',
+          statusCode: 400,
+        }));
+      }
+      await MedicalCenterValidator.checkIfCenterExist(doctor.medicalCenterId);
+
       // Parse date
       const date = new Date(doctor.birthdate);
+      if (Number.isNaN(date.getTime())) {
+        return Promise.reject(new AppError({
+          message: 'La fecha de nacimiento es inválida.',
+          statusCode: 400,
+        }));
+      }
       doctor.birthdate = date;
 
       const registerRes = await this.register({ user, doctor });
@@ -112,6 +128,12 @@ export class AuthService {
 
       // Parse date
       const date = new Date(patient.birthdate);
+      if (Number.isNaN(date.getTime())) {
+        return Promise.reject(new AppError({
+          message: 'La fecha de nacimiento es inválida.',
+          statusCode: 400,
+        }));
+      }
       patient.birthdate = date;
 
       // Register patient
