@@ -192,6 +192,7 @@ export class AuthService {
 
       return Promise.resolve({ success: true, data: res });
     } catch (error) {
+      console.log(error);
       if (error instanceof AppError) {
         return Promise.reject(error);
       }
