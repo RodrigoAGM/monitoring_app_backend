@@ -22,8 +22,8 @@ enum IdType {
 }
 
 enum PatientStatus {
-  REPORTED
-  NOT_REPORTED
+  ON_MONITORING
+  DISCHARGED
 }
 
 model Doctor {
@@ -53,7 +53,7 @@ model Patient {
   bloodType      String
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         Int              @unique
-  status         PatientStatus?   @default(NOT_REPORTED)
+  status         PatientStatus?   @default(DISCHARGED)
   medicalCares   MedicalCare[]
   monitoringPlan MonitoringPlan[]
 }
@@ -96,18 +96,26 @@ model MonitoringPlan {
   code            Int             @unique
   startDate       DateTime        @default(now())
   endDate         DateTime
-  temperature     Decimal?
-  saturation      Decimal?
-  heartRate       Decimal?
   patientId       Int
   doctorId        Int
-  patient         Patient         @relation(fields: [patientId], references: [id])
-  doctor          Doctor          @relation(fields: [doctorId], references: [id])
-  dischargePaper  DischargePaper?
-  priority        PriorityType?   @relation(fields: [priorityTypeId], references: [id])
-  emergencyType   EmergencyType?  @relation(fields: [emergencyTypeId], references: [id])
   emergencyTypeId Int?
   priorityTypeId  Int?
+  patient         Patient         @relation(fields: [patientId], references: [id])
+  doctor          Doctor          @relation(fields: [doctorId], references: [id])
+  priority        PriorityType?   @relation(fields: [priorityTypeId], references: [id])
+  emergencyType   EmergencyType?  @relation(fields: [emergencyTypeId], references: [id])
+  dischargePaper  DischargePaper?
+  dailyReports    DailyReport[]
+}
+
+model DailyReport {
+  id               Int            @id @default(autoincrement())
+  temperature      Decimal
+  saturation       Decimal
+  heartRate        Decimal
+  createdAt        DateTime       @default(now())
+  monitoringPlan   MonitoringPlan @relation(fields: [monitoringPlanId], references: [id])
+  monitoringPlanId Int
 }
 
 model DischargePaper {
