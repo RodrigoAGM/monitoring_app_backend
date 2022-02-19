@@ -5,7 +5,7 @@ import { manager } from '../../../utils/prisma.manager';
 export class UserValidator {
   static async checkIfUserExist(id: number, role?: Role) {
     try {
-      const data = await manager.client.user.findUnique({
+      const data = await manager.client.user.findFirst({
         where: { id, ...(role ? { role } : {}) },
         include: { doctor: true, patient: true },
       });
@@ -23,7 +23,7 @@ export class UserValidator {
 
   static async checkIfUserExistByIdentification(identification: string, role?: Role) {
     try {
-      const data = await manager.client.user.findUnique({
+      const data = await manager.client.user.findFirst({
         where: { identification, ...(role ? { role } : {}) },
         include: { doctor: true, patient: true },
       });
