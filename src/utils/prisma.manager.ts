@@ -14,11 +14,13 @@ class PrismaManager {
           User: () => new AppError({ message: 'El usuario no existe.', statusCode: 404 }),
           RefreshToken: () => new AppError({ message: 'El token de refresco no existe.', statusCode: 404 }),
           EmergencyType: () => new AppError({ message: 'El tipo de emergencia no existe.', statusCode: 404 }),
+          PriorityType: () => new AppError({ message: 'El tipo de prioridad no existe.', statusCode: 404 }),
         },
         findUnique: {
           User: () => new AppError({ message: 'El usuario no existe.', statusCode: 404 }),
           RefreshToken: () => new AppError({ message: 'El token de refresco no existe.', statusCode: 404 }),
           EmergencyType: () => new AppError({ message: 'El tipo de emergencia no existe.', statusCode: 404 }),
+          PriorityType: () => new AppError({ message: 'El tipo de prioridad no existe.', statusCode: 404 }),
         },
       },
     });

@@ -7,6 +7,7 @@ import handleError from './middleware/error.middleware';
 import { authApi } from './components/auth/api/auth.api';
 import { userApi } from './components/user/api/user.api';
 import { emergencyTypeApi } from './components/emergencyType/api/emergency.type.api';
+import { priorityTypeApi } from './components/priority/api/priority.api';
 
 export default class App {
   private app: Application;
@@ -36,6 +37,7 @@ export default class App {
     this.app.use('/user', json(), userApi);
     this.app.use('/auth', json(), authApi);
     this.app.use('/emergency', json(), emergencyTypeApi);
+    this.app.use('/priority', json(), priorityTypeApi);
     this.app.use(handleError);
   }
 
