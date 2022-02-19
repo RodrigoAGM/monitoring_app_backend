@@ -21,7 +21,12 @@ router.post(
   authenticateRole([Role.ADMIN, Role.DOCTOR]),
   handleRegisterPatient
 );
-router.post('/signup/doctor', handleRegisterDoctor);
+router.post(
+  '/signup/doctor',
+  authenticateToken,
+  authenticateRole([Role.ADMIN]),
+  handleRegisterDoctor,
+);
 
 // SignIn
 router.post('/signin/patient', handlePatientSignIn);

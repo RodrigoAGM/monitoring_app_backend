@@ -38,7 +38,6 @@ model Doctor {
   userId          Int              @unique
   medicalCenterId Int
   medicalCenter   MedicalCenter    @relation(fields: [medicalCenterId], references: [id])
-  medicalCares    MedicalCare[]
   monitoringPlan  MonitoringPlan[]
 }
 
@@ -54,7 +53,6 @@ model Patient {
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         Int              @unique
   status         PatientStatus?   @default(DISCHARGED)
-  medicalCares   MedicalCare[]
   monitoringPlan MonitoringPlan[]
 }
 
@@ -69,15 +67,6 @@ model User {
   role           Role     @default(PATIENT)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-}
-
-model MedicalCare {
-  patientId Int
-  doctorId  Int
-  patient   Patient @relation(fields: [patientId], references: [id])
-  doctor    Doctor  @relation(fields: [doctorId], references: [id])
-
-  @@id([patientId, doctorId])
 }
 
 model MedicalCenter {
@@ -140,13 +129,13 @@ model Prescription {
 
 model EmergencyType {
   id             Int              @id @default(autoincrement())
-  name           String
+  name           String           @db.VarChar(250)
   MonitoringPlan MonitoringPlan[]
 }
 
 model PriorityType {
   id             Int              @id @default(autoincrement())
-  name           String
+  name           String           @db.VarChar(250)
   MonitoringPlan MonitoringPlan[]
 }
 

@@ -28,7 +28,7 @@ export class AuthService {
       // Set role
       user.role = patient ? Role.PATIENT : Role.DOCTOR;
 
-      const res = await userService.create({ user, doctor });
+      const res = await userService.create({ user, patient, doctor });
 
       return Promise.resolve({ success: true, data: res.data });
     } catch (error) {
@@ -117,26 +117,9 @@ export class AuthService {
       // Register patient
       const registerRes = await this.register({ user, patient });
 
-      // Create tokens
-      const userTokens = await tokenManager.createTokens(user);
-
-      // Save user tokens
-      await manager.client.refreshToken.create({
-        data: {
-          token: userTokens.token,
-          refreshToken: userTokens.refreshToken,
-        },
-      });
-
-      // Create response object
-      const res = {
-        ...registerRes.data!,
-        token: userTokens.token,
-        refreshToken: userTokens.refreshToken,
-      };
-
-      return Promise.resolve({ success: true, data: res });
+      return Promise.resolve({ success: true, data: registerRes.data });
     } catch (error) {
+      console.log(error);
       if (error instanceof AppError) {
         return Promise.reject(error);
       }
