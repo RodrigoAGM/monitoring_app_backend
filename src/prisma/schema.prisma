@@ -87,12 +87,12 @@ model MonitoringPlan {
   endDate         DateTime
   patientId       Int
   doctorId        Int
-  emergencyTypeId Int?
-  priorityTypeId  Int?
+  emergencyTypeId Int
+  priorityTypeId  Int
   patient         Patient         @relation(fields: [patientId], references: [id])
   doctor          Doctor          @relation(fields: [doctorId], references: [id])
-  priority        PriorityType?   @relation(fields: [priorityTypeId], references: [id])
-  emergencyType   EmergencyType?  @relation(fields: [emergencyTypeId], references: [id])
+  priority        PriorityType    @relation(fields: [priorityTypeId], references: [id])
+  emergencyType   EmergencyType   @relation(fields: [emergencyTypeId], references: [id])
   dischargePaper  DischargePaper?
   dailyReports    DailyReport[]
 }

@@ -16,6 +16,9 @@ class PrismaManager {
           EmergencyType: () => new AppError({ message: 'El tipo de emergencia no existe.', statusCode: 404 }),
           PriorityType: () => new AppError({ message: 'El tipo de prioridad no existe.', statusCode: 404 }),
           MedicalCenter: () => new AppError({ message: 'El centro médico no existe.', statusCode: 404 }),
+          MonitoringPlan: () => new AppError({ message: 'El plan de monitoreo no existe.', statusCode: 404 }),
+          Doctor: () => new AppError({ message: 'El médico no existe.', statusCode: 404 }),
+          Patient: () => new AppError({ message: 'El paciente no existe.', statusCode: 404 }),
         },
         findUnique: {
           User: () => new AppError({ message: 'El usuario no existe.', statusCode: 404 }),
@@ -23,6 +26,9 @@ class PrismaManager {
           EmergencyType: () => new AppError({ message: 'El tipo de emergencia no existe.', statusCode: 404 }),
           PriorityType: () => new AppError({ message: 'El tipo de prioridad no existe.', statusCode: 404 }),
           MedicalCenter: () => new AppError({ message: 'El centro médico no existe.', statusCode: 404 }),
+          MonitoringPlan: () => new AppError({ message: 'El plan de monitoreo no existe.', statusCode: 404 }),
+          Doctor: () => new AppError({ message: 'El médico no existe.', statusCode: 404 }),
+          Patient: () => new AppError({ message: 'El paciente no existe.', statusCode: 404 }),
         },
       },
     });
