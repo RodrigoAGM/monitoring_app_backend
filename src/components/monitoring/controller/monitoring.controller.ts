@@ -6,18 +6,37 @@ const monitoringService = new MonitoringService();
 export async function handleGetSelfPlans(req: Request, res: Response, next: NextFunction) {
   try {
     const payload = req.user;
-    const data = await monitoringService.getSelfPlans(payload);
+    const active = req.query.active === 'true';
+    const data = await monitoringService.getSelfPlans(payload, active);
     res.status(200).send(data);
   } catch (error) {
     next(error);
   }
 }
 
-export async function handleGetSelfPlan(req: Request, res: Response, next: NextFunction) {
+export async function handleGetPatientHistory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const payload = req.user;
+    const { patientId } = req.params;
+    const active = req.query.active === 'true';
+    const self = req.query.self === 'true';
+    const data = await monitoringService.getPatientHistory(
+      payload,
+      Number(patientId),
+      active,
+      self,
+    );
+    res.status(200).send(data);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function handleGetPlan(req: Request, res: Response, next: NextFunction) {
   try {
     const payload = req.user;
     const { id } = req.params;
-    const data = await monitoringService.getSelfPlan(payload, Number(id));
+    const data = await monitoringService.getPlan(payload, Number(id));
     res.status(200).send(data);
   } catch (error) {
     next(error);

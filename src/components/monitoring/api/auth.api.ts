@@ -4,8 +4,9 @@ import { authenticateToken } from '../../../middleware/jwt.middleware';
 import { authenticateRole } from '../../../middleware/role.middleware';
 import {
   handleGetSelfPlans,
-  handleGetSelfPlan,
+  handleGetPlan,
   handleCreatePlan,
+  handleGetPatientHistory,
 } from '../controller/monitoring.controller';
 
 const router = Router();
@@ -18,10 +19,16 @@ router.get(
   handleGetSelfPlans,
 );
 router.get(
-  '/self/:id',
+  '/:id',
   authenticateToken,
   authenticateRole([Role.DOCTOR, Role.PATIENT]),
-  handleGetSelfPlan,
+  handleGetPlan,
+);
+router.get(
+  '/patient/:patientId',
+  authenticateToken,
+  authenticateRole([Role.DOCTOR]),
+  handleGetPatientHistory,
 );
 
 // Create

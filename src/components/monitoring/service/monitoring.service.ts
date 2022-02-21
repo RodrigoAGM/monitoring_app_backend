@@ -40,7 +40,7 @@ export class MonitoringService implements CRUDService<MonitoringPlan> {
       if (error instanceof AppError) {
         return Promise.reject(error);
       }
-      const message = 'Error al obtener el plan de monitoreo.';
+      const message = 'Error al obtener los planes de monitoreo.';
       return Promise.reject(new AppError({ message, statusCode: 500 }));
     }
   }
@@ -127,7 +127,7 @@ export class MonitoringService implements CRUDService<MonitoringPlan> {
       if (error instanceof AppError) {
         return Promise.reject(error);
       }
-      const message = 'Error al obtener el plan de monitoreo.';
+      const message = 'Error al eliminar el plan de monitoreo.';
       return Promise.reject(new AppError({ message, statusCode: 500 }));
     }
   }
@@ -181,17 +181,23 @@ export class MonitoringService implements CRUDService<MonitoringPlan> {
       if (error instanceof AppError) {
         return Promise.reject(error);
       }
-      const message = 'Error al obtener el plan de monitoreo.';
+      const message = 'Error al actualizar el plan de monitoreo.';
       return Promise.reject(new AppError({ message, statusCode: 500 }));
     }
   }
 
-  async getSelfPlans(payload: Payload): Promise<Result<MonitoringPlan[]>> {
+  async getSelfPlans(payload: Payload, active: Boolean = false): Promise<Result<MonitoringPlan[]>> {
     try {
       const plans = await manager.client.monitoringPlan.findMany({
         where: {
           ...(payload.role === Role.PATIENT ? { patient: { userId: payload.id } } : {}),
           ...(payload.role === Role.DOCTOR ? { doctor: { userId: payload.id } } : {}),
+          ...(active ? {
+            OR: {
+              endDate: { gte: new Date() },
+              startDate: { lte: new Date() },
+            },
+          } : {}),
         },
         include: {
           doctor: true,
@@ -206,18 +212,17 @@ export class MonitoringService implements CRUDService<MonitoringPlan> {
       if (error instanceof AppError) {
         return Promise.reject(error);
       }
-      const message = 'Error al obtener el plan de monitoreo.';
+      const message = 'Error al los planes de monitoreo.';
       return Promise.reject(new AppError({ message, statusCode: 500 }));
     }
   }
 
-  async getSelfPlan(payload: Payload, id: number): Promise<Result<MonitoringPlan>> {
+  async getPlan(payload: Payload, id: number): Promise<Result<MonitoringPlan>> {
     try {
       const plan = await manager.client.monitoringPlan.findFirst({
         where: {
           id,
           ...(payload.role === Role.PATIENT ? { patient: { userId: payload.id } } : {}),
-          ...(payload.role === Role.DOCTOR ? { doctor: { userId: payload.id } } : {}),
         },
         include: {
           doctor: true,
@@ -235,6 +240,42 @@ export class MonitoringService implements CRUDService<MonitoringPlan> {
         return Promise.reject(error);
       }
       const message = 'Error al obtener el plan de monitoreo.';
+      return Promise.reject(new AppError({ message, statusCode: 500 }));
+    }
+  }
+
+  async getPatientHistory(
+    payload: Payload,
+    patientId: number,
+    active: Boolean = false,
+    self: Boolean = false,
+  ): Promise<Result<MonitoringPlan[]>> {
+    try {
+      const plans = await manager.client.monitoringPlan.findMany({
+        where: {
+          patient: { userId: patientId },
+          ...(self ? { doctor: { userId: payload.id } } : {}),
+          ...(active ? {
+            OR: {
+              endDate: { gte: new Date() },
+              startDate: { lte: new Date() },
+            },
+          } : {}),
+        },
+        include: {
+          doctor: true,
+          patient: true,
+          emergencyType: true,
+          priority: true,
+        },
+      });
+
+      return Promise.resolve({ success: true, data: plans });
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      const message = 'Error al los planes de monitoreo.';
       return Promise.reject(new AppError({ message, statusCode: 500 }));
     }
   }
