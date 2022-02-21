@@ -3,13 +3,15 @@ import { Router } from 'express';
 import { authenticateToken } from '../../../middleware/jwt.middleware';
 import { authenticateRole } from '../../../middleware/role.middleware';
 import {
+  handleGetPatientsByEmergency,
+  handleGetPatientsByPriority,
   handleGetPlansByEmergencyReport,
   handleGetPlansByPriorityReport,
 } from '../controller/report.controller';
 
 const router = Router();
 
-// Get plans
+// Get reports
 router.get(
   '/priority',
   authenticateToken,
@@ -22,6 +24,21 @@ router.get(
   authenticateToken,
   authenticateRole([Role.DOCTOR]),
   handleGetPlansByEmergencyReport,
+);
+
+// Get patients
+router.get(
+  '/patient/priority/:priorityId',
+  authenticateToken,
+  authenticateRole([Role.DOCTOR]),
+  handleGetPatientsByPriority,
+);
+
+router.get(
+  '/patient/emergency/:emergencyId',
+  authenticateToken,
+  authenticateRole([Role.DOCTOR]),
+  handleGetPatientsByEmergency,
 );
 
 export { router as reportApi };
