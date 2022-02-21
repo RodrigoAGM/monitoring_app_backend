@@ -9,7 +9,8 @@ import { userApi } from './components/user/api/user.api';
 import { emergencyTypeApi } from './components/emergencyType/api/emergency.type.api';
 import { priorityTypeApi } from './components/priority/api/priority.api';
 import { medicalCenterApi } from './components/medicalCenter/api/emergency.type.api';
-import { monitoringApi } from './components/monitoring/api/auth.api';
+import { monitoringApi } from './components/monitoring/api/monitoring.api';
+import { reportApi } from './components/report/api/report.api';
 
 export default class App {
   private app: Application;
@@ -42,6 +43,7 @@ export default class App {
     this.app.use('/priority', json(), priorityTypeApi);
     this.app.use('/center', json(), medicalCenterApi);
     this.app.use('/monitoring', json(), monitoringApi);
+    this.app.use('/report', json(), reportApi);
     this.app.use(handleError);
   }
 
