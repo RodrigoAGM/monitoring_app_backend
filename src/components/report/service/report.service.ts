@@ -13,10 +13,10 @@ export class ReportService {
     try {
       const plans = await manager.client.$queryRaw<any[]>(
         Prisma.sql`SELECT p.id, p.name, Count(*) as 'count' 
-        FROM monitoring_db.monitoringplan m 
-        inner join monitoring_db.prioritytype p  
+        FROM monitoringplan m 
+        inner join prioritytype p  
         on m.priorityTypeId = p.id
-        inner join monitoring_db.doctor d 
+        inner join doctor d 
         on d.userId = ${payload.id}
         where m.doctorId = d.id and 
         m.endDate >= ${(active) ? new Date() : ''}
@@ -55,10 +55,10 @@ export class ReportService {
     try {
       const plans = await manager.client.$queryRaw<any[]>(
         Prisma.sql`SELECT e.id, e.name, Count(*) as 'count' 
-        FROM monitoring_db.monitoringplan m 
-        inner join monitoring_db.emergencytype e  
+        FROM monitoringplan m 
+        inner join emergencytype e  
         on m.emergencyTypeId = e.id
-        inner join monitoring_db.doctor d 
+        inner join doctor d 
         on d.userId = ${payload.id}
         where m.doctorId = d.id and 
         m.endDate >= ${(active) ? new Date() : ''}
