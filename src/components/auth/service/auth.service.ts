@@ -6,12 +6,15 @@ import {
   PrismaClientValidationError,
 } from '@prisma/client/runtime';
 import bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import AppError from '../../../error/app.error';
 import { Result, UserTokens } from '../../../types/types';
 import { manager } from '../../../utils/prisma.manager';
 import { tokenManager } from '../../../utils/token.manager';
+import { MailingService } from '../../mail/service/mail.service';
 import { MedicalCenterValidator } from '../../medicalCenter/validator/medical.center.validator';
 import { UserService } from '../../user/service/user.service';
+import { UserValidator } from '../../user/validator/user.validator';
 
 const userService = new UserService();
 
@@ -248,6 +251,76 @@ export class AuthService {
       }
       return Promise.reject(new AppError({
         message: 'Error al refrescar token.',
+        statusCode: 500,
+      }));
+    }
+  }
+
+  async recoverPassword(birthdate: Date, identification: string): Promise<Result<string>> {
+    try {
+      const user = await UserValidator.checkIfUserExistByIdentification(identification);
+
+      // Validate birthdate
+      const date = new Date(birthdate);
+      if (Number.isNaN(date.getTime())) {
+        return Promise.reject(new AppError({
+          message: 'La fecha de nacimiento es inválida.',
+          statusCode: 400,
+        }));
+      }
+      let fullname = '';
+
+      switch (user.role) {
+        case Role.DOCTOR: {
+          if (user.doctor?.birthdate.getTime() !== date.getTime()) {
+            return Promise.reject(new AppError({
+              message: 'No se encontró un usuario con la fecha de nacimiento ingresada',
+              statusCode: 400,
+            }));
+          }
+          const { doctor } = user;
+          fullname = `${doctor.firstName.split(' ')[0]} ${doctor.lastName.split(' ')[0]}`;
+          break;
+        }
+        case Role.PATIENT: {
+          if (user.patient?.birthdate.getTime() !== date.getTime()) {
+            return Promise.reject(new AppError({
+              message: 'No se encontró un usuario con la fecha de nacimiento ingresada',
+              statusCode: 400,
+            }));
+          }
+          const { patient } = user;
+          fullname = `${patient.firstName.split(' ')[0]} ${patient.lastName.split(' ')[0]}`;
+          break;
+        }
+      }
+
+      const tempPass = randomBytes(6).toString('hex');
+      const hashedPass = await bcrypt.hash(tempPass, 10);
+
+      await MailingService.getConnection().sendRecoverPasswordMail(
+        user.email,
+        tempPass,
+        fullname,
+      );
+
+      await manager.client.user.update({
+        where: { identification },
+        data: {
+          password: hashedPass,
+        },
+      });
+
+      return Promise.resolve({
+        success: true,
+        data: `Se ha enviado la nueva contraseña al correo ${user.email}`,
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({
+        message: 'Error al recuperar contraseña.',
         statusCode: 500,
       }));
     }

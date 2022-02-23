@@ -77,3 +77,13 @@ export async function handleRefreshToken(req: Request, res: Response, next: Next
     next(error);
   }
 }
+
+export async function handleRecoverPassword(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { identification, birthdate } = req.body;
+    const data = await authService.recoverPassword(birthdate, identification);
+    res.status(200).send(clearData(data));
+  } catch (error) {
+    next(error);
+  }
+}
