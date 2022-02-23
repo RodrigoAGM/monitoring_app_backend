@@ -95,6 +95,7 @@ model MonitoringPlan {
   emergencyType   EmergencyType   @relation(fields: [emergencyTypeId], references: [id])
   dischargePaper  DischargePaper?
   dailyReports    DailyReport[]
+  Prescription    Prescription?
 }
 
 model DailyReport {
@@ -109,7 +110,7 @@ model DailyReport {
 
 model DischargePaper {
   id               Int            @id @default(autoincrement())
-  code             Int
+  code             Int            @unique
   description      String
   dischargeDate    DateTime       @default(now())
   monitoringPlan   MonitoringPlan @relation(fields: [monitoringPlanId], references: [id])
@@ -117,14 +118,16 @@ model DischargePaper {
 }
 
 model Prescription {
-  id           Int     @id @default(autoincrement())
-  code         Int
-  medicine1    String
-  medicine2    String?
-  medicine3    String?
-  medicine4    String?
-  medicine5    String?
-  instructions String?
+  id               Int            @id @default(autoincrement())
+  code             Int
+  medicine1        String
+  medicine2        String?
+  medicine3        String?
+  medicine4        String?
+  medicine5        String?
+  instructions     String?
+  monitoringPlan   MonitoringPlan @relation(fields: [monitoringPlanId], references: [id])
+  monitoringPlanId Int            @unique
 }
 
 model EmergencyType {

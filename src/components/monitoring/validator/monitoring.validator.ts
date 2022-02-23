@@ -5,7 +5,33 @@ import { manager } from '../../../utils/prisma.manager';
 export class MonitoringPlanValidator {
   static async checkIfPlanExist(id: number): Promise<MonitoringPlan> {
     try {
-      const data = await manager.client.monitoringPlan.findUnique({ where: { id } });
+      const data = await manager.client.monitoringPlan.findFirst({ where: { id } });
+      return Promise.resolve(data!);
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({
+        message: 'Ocurrio un al obetener el plan de monitoreo',
+        statusCode: 500,
+      }));
+    }
+  }
+
+  static async checkIfPlanExistWithDoctor(id: number, doctorId: number): Promise<MonitoringPlan> {
+    try {
+      const data = await manager.client.monitoringPlan.findFirst({
+        where: { id },
+        include: { doctor: true },
+      });
+
+      if (data?.doctor.userId !== doctorId) {
+        return Promise.reject(new AppError({
+          message: 'No tienes permiso para modificar este plan.',
+          statusCode: 403,
+        }));
+      }
+
       return Promise.resolve(data!);
     } catch (error) {
       if (error instanceof AppError) {

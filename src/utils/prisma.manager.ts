@@ -19,6 +19,7 @@ class PrismaManager {
           MonitoringPlan: () => new AppError({ message: 'El plan de monitoreo no existe.', statusCode: 404 }),
           Doctor: () => new AppError({ message: 'El médico no existe.', statusCode: 404 }),
           Patient: () => new AppError({ message: 'El paciente no existe.', statusCode: 404 }),
+          Prescription: () => new AppError({ message: 'No se encontró receta médica.', statusCode: 404 }),
         },
         findUnique: {
           User: () => new AppError({ message: 'El usuario no existe.', statusCode: 404 }),
@@ -29,6 +30,7 @@ class PrismaManager {
           MonitoringPlan: () => new AppError({ message: 'El plan de monitoreo no existe.', statusCode: 404 }),
           Doctor: () => new AppError({ message: 'El médico no existe.', statusCode: 404 }),
           Patient: () => new AppError({ message: 'El paciente no existe.', statusCode: 404 }),
+          Prescription: () => new AppError({ message: 'No se encontró receta médica.', statusCode: 404 }),
         },
       },
     });
