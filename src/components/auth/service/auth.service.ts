@@ -8,7 +8,7 @@ import {
 import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import AppError from '../../../error/app.error';
-import { Result, UserTokens } from '../../../types/types';
+import { Payload, Result, UserTokens } from '../../../types/types';
 import { manager } from '../../../utils/prisma.manager';
 import { tokenManager } from '../../../utils/token.manager';
 import { MailingService } from '../../mail/service/mail.service';
@@ -314,6 +314,48 @@ export class AuthService {
       return Promise.resolve({
         success: true,
         data: `Se ha enviado la nueva contraseña al correo ${user.email}`,
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({
+        message: 'Error al recuperar contraseña.',
+        statusCode: 500,
+      }));
+    }
+  }
+
+  async updatePassword(
+    payload: Payload,
+    newPassword: string,
+    oldPassword: string,
+  ): Promise<Result<string>> {
+    try {
+      const user = await UserValidator.checkIfUserExist(payload.id);
+
+      // Validate old password
+      const isValid = await bcrypt.compare(oldPassword, user.password);
+
+      if (!isValid) {
+        return Promise.reject(new AppError({
+          message: 'La contraseña antigua ingresada es incorrecta.',
+          statusCode: 400,
+        }));
+      }
+
+      const hashedNewPass = await bcrypt.hash(newPassword, 10);
+
+      await manager.client.user.update({
+        where: { id: payload.id },
+        data: {
+          password: hashedNewPass,
+        },
+      });
+
+      return Promise.resolve({
+        success: true,
+        data: 'Se ha actualizado la contraseña',
       });
     } catch (error) {
       if (error instanceof AppError) {

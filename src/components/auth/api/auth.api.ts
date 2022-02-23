@@ -11,6 +11,7 @@ import {
   handleRegisterPatient,
   handleSignOut,
   handleRecoverPassword,
+  handleUpdatePassword,
 } from '../controller/auth.controller';
 
 const router = Router();
@@ -38,7 +39,12 @@ router.post('/signin/admin', handleAdminSignIn);
 router.delete('/signout/:refreshToken', handleSignOut);
 
 // Recover Password
-router.post('/forgot/password', handleRecoverPassword);
+router.post('/password/forgot', handleRecoverPassword);
+router.put(
+  '/password/update',
+  authenticateToken,
+  handleUpdatePassword,
+);
 
 // Token
 router.post('/token/refresh', handleRefreshToken);
