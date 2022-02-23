@@ -125,7 +125,8 @@ model Prescription {
   medicine3        String?
   medicine4        String?
   medicine5        String?
-  instructions     String?
+  instructions     String?        @db.VarChar(250)
+  createdAt        DateTime       @default(now())
   monitoringPlan   MonitoringPlan @relation(fields: [monitoringPlanId], references: [id])
   monitoringPlanId Int            @unique
 }

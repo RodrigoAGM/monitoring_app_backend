@@ -37,8 +37,28 @@ export class PrescriptionService {
     }
   }
 
-  async getSelf(payload: Payload): Promise<Result<Prescription[]>> {
+  async getSelf(payload: Payload, from?: number, to?: number): Promise<Result<Prescription[]>> {
     try {
+      // Validate dates
+      let fromDate = new Date();
+      if (from) {
+        fromDate = new Date(from);
+        from = Number.isNaN(fromDate.getTime()) ? undefined : from;
+      }
+
+      let toDate = new Date();
+      if (to) {
+        toDate = new Date(to);
+        to = Number.isNaN(toDate.getTime()) ? undefined : to;
+      }
+
+      if (to && from && (toDate.getTime() <= fromDate.getTime())) {
+        return Promise.reject(new AppError({
+          message: 'La fecha de fin no debe ser menor o igual que la fecha de inicio',
+          statusCode: 400,
+        }));
+      }
+
       const prescription = await manager.client.prescription.findMany({
         where: {
           ...(payload.role === Role.PATIENT ? {
@@ -55,6 +75,18 @@ export class PrescriptionService {
               },
             },
           } : {}),
+          AND: [
+            {
+              ...(from ? {
+                createdAt: { gte: fromDate },
+              } : {}),
+            },
+            {
+              ...(to ? {
+                createdAt: { lte: toDate },
+              } : {}),
+            },
+          ],
         },
       });
 

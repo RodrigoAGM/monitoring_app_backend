@@ -44,8 +44,9 @@ export async function handleGetPrescription(req: Request, res: Response, next: N
 export async function handleGetSelfPrescription(req: Request, res: Response, next: NextFunction) {
   try {
     const payload = req.user;
-
-    const data = await prescriptionService.getSelf(payload);
+    const from = Number(req.query.from);
+    const to = Number(req.query.to);
+    const data = await prescriptionService.getSelf(payload, from, to);
     res.status(200).send(data);
   } catch (error) {
     next(error);
