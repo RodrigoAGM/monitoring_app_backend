@@ -37,7 +37,11 @@ export class PrescriptionService {
     }
   }
 
-  async getSelf(payload: Payload, from?: number, to?: number): Promise<Result<Prescription[]>> {
+  async getSelf(
+    payload: Payload,
+    from?: string | number,
+    to?: string | number,
+  ): Promise<Result<Prescription[]>> {
     try {
       // Validate dates
       let fromDate = new Date();
@@ -59,6 +63,8 @@ export class PrescriptionService {
         }));
       }
 
+      console.log(fromDate, from);
+      console.log(toDate, to);
       const prescription = await manager.client.prescription.findMany({
         where: {
           ...(payload.role === Role.PATIENT ? {
