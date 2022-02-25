@@ -4,6 +4,7 @@ import AppError from '../../../error/app.error';
 import { CRUDService } from '../../../interface/crud.service.interface';
 import { Payload, Result } from '../../../types/types';
 import { clearData } from '../../../utils/clear.response';
+import { getDateOnly } from '../../../utils/date.utils';
 import { manager } from '../../../utils/prisma.manager';
 import { EmergencyTypeValidator } from '../../emergencyType/validator/emergency.type.validator';
 import { PriorityTypeValidator } from '../../priority/validator/priority.validator';
@@ -85,8 +86,8 @@ export class MonitoringService implements CRUDService<MonitoringPlan> {
 
       // Validate dates
       await MonitoringPlanValidator.validateDates(data.startDate, data.endDate);
-      data.startDate = new Date(data.startDate);
-      data.endDate = new Date(data.endDate);
+      data.startDate = getDateOnly(new Date(data.startDate));
+      data.endDate = getDateOnly(new Date(data.endDate));
 
       const plan = await manager.client.monitoringPlan.create({
         data: {

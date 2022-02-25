@@ -44,6 +44,28 @@ export class MonitoringPlanValidator {
     }
   }
 
+  static async checkIfPlanExistWithPatient(id: number, patientId: number): Promise<MonitoringPlan> {
+    try {
+      const data = await manager.client.monitoringPlan.findFirst({
+        where: {
+          id,
+          patient: { userId: patientId },
+        },
+        include: { patient: true },
+      });
+
+      return Promise.resolve(data!);
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({
+        message: 'Ocurrio un error al obetener el plan de monitoreo',
+        statusCode: 500,
+      }));
+    }
+  }
+
   static async validateDates(startDate: any, endDate: any) {
     try {
       const start = new Date(startDate);

@@ -2,6 +2,11 @@ import { Role } from '.prisma/client';
 import { Router } from 'express';
 import { authenticateToken } from '../../../middleware/jwt.middleware';
 import { authenticateRole } from '../../../middleware/role.middleware';
+import {
+  handleCreateDailyReport,
+  handleGetDailyReport,
+  handleGetDailyReportFromPatient,
+} from '../../dailyReport/controller/daily.controller';
 import { handleCreatePrescription, handleGetFromPlan } from '../../prescription/controller/prescription.controller';
 import {
   handleGetSelfPlans,
@@ -52,6 +57,28 @@ router.post(
   authenticateToken,
   authenticateRole([Role.DOCTOR]),
   handleCreatePrescription,
+);
+
+// DailyReport
+router.post(
+  '/:planId/daily',
+  authenticateToken,
+  authenticateRole([Role.PATIENT]),
+  handleCreateDailyReport,
+);
+
+router.post(
+  '/:planId/daily/self',
+  authenticateToken,
+  authenticateRole([Role.PATIENT]),
+  handleGetDailyReport,
+);
+
+router.post(
+  '/:planId/daily/patient/:patientId',
+  authenticateToken,
+  authenticateRole([Role.DOCTOR]),
+  handleGetDailyReportFromPatient,
 );
 
 export { router as monitoringApi };

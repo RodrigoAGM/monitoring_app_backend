@@ -219,7 +219,7 @@ export class ReportService {
           FROM monitoringplan m 
           inner join doctor doc on doc.id = m.doctorId
           left join timedimension t on t.db_date = ${strDate}
-          left join dailyreport d on d.monitoringPlanId = m.id and d.createdAt = t.db_date
+          left join dailyreport d on d.monitoringPlanId = m.id and DATE(d.createdAt) = t.db_date
           right join patient on patient.id = m.patientId
           where t.db_date between m.startDate and m.endDate and doc.userId = ${payload.id}
           group by m.id, t.db_date) as T group by T.status`;
@@ -230,7 +230,7 @@ export class ReportService {
           FROM monitoringplan m 
           inner join doctor doc on doc.id = m.doctorId
           left join timedimension t on t.db_date = ${strDate}
-          left join dailyreport d on d.monitoringPlanId = m.id and d.createdAt = t.db_date
+          left join dailyreport d on d.monitoringPlanId = m.id and DATE(d.createdAt) = t.db_date
           right join patient on patient.id = m.patientId
           and doc.userId = ${payload.id}
           group by m.id, t.db_date) as T group by T.status`;
