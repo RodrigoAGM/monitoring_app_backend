@@ -217,22 +217,22 @@ export class ReportService {
           SELECT m.id, m.patientId, t.db_date, patient.firstName, patient.lastName,
           case when(d.id is null) then 'NOT REPORTED' else 'REPORTED' end as 'status'
           FROM monitoringplan m 
-          inner join doctor doc on doc.userId = ${payload.id} 
+          inner join doctor doc on doc.id = m.doctorId
           left join timedimension t on t.db_date = ${strDate}
           left join dailyreport d on d.monitoringPlanId = m.id and d.createdAt = t.db_date
           right join patient on patient.id = m.patientId
-          where t.db_date between m.startDate and m.endDate and doc.id = m.doctorId
+          where t.db_date between m.startDate and m.endDate and doc.userId = ${payload.id}
           group by m.id, t.db_date) as T group by T.status`;
       } else {
         query = Prisma.sql`select T.status, count(*) as 'total' from (
           SELECT m.id, m.patientId, t.db_date, patient.firstName, patient.lastName,
           case when(d.id is null) then 'NOT REPORTED' else 'REPORTED' end as 'status'
           FROM monitoringplan m 
-          inner join doctor doc on doc.userId = ${payload.id} 
+          inner join doctor doc on doc.id = m.doctorId
           left join timedimension t on t.db_date = ${strDate}
           left join dailyreport d on d.monitoringPlanId = m.id and d.createdAt = t.db_date
           right join patient on patient.id = m.patientId
-          where doc.id = m.doctorId
+          and doc.userId = ${payload.id}
           group by m.id, t.db_date) as T group by T.status`;
       }
 
