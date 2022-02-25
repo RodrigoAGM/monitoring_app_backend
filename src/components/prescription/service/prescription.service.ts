@@ -63,8 +63,6 @@ export class PrescriptionService {
         }));
       }
 
-      console.log(fromDate, from);
-      console.log(toDate, to);
       const prescription = await manager.client.prescription.findMany({
         where: {
           ...(payload.role === Role.PATIENT ? {
