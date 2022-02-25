@@ -68,3 +68,19 @@ export async function handleGetPatientsByPriority(
     next(error);
   }
 }
+
+export async function handleGetDailyReportDayResume(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const payload = req.user;
+    const active = req.query.active === 'true';
+
+    const data = await reportService.getDailyReportDayResume(payload, active);
+    res.status(200).send(data);
+  } catch (error) {
+    next(error);
+  }
+}

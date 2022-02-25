@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { authenticateToken } from '../../../middleware/jwt.middleware';
 import { authenticateRole } from '../../../middleware/role.middleware';
 import {
+  handleGetDailyReportDayResume,
   handleGetPatientsByEmergency,
   handleGetPatientsByPriority,
   handleGetPlansByEmergencyReport,
@@ -39,6 +40,13 @@ router.get(
   authenticateToken,
   authenticateRole([Role.DOCTOR]),
   handleGetPatientsByEmergency,
+);
+
+router.get(
+  '/patient/status',
+  authenticateToken,
+  authenticateRole([Role.DOCTOR]),
+  handleGetDailyReportDayResume,
 );
 
 export { router as reportApi };

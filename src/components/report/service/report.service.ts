@@ -202,4 +202,50 @@ export class ReportService {
       return Promise.reject(new AppError({ message, statusCode: 500 }));
     }
   }
+
+  async getDailyReportDayResume(
+    payload: Payload,
+    active: Boolean = false,
+  ): Promise<Result<any[]>> {
+    try {
+      const currentDate = new Date();
+      const strDate = `${currentDate.getFullYear()}/${currentDate.getMonth() + 1}/${currentDate.getDate()}`;
+
+      let query;
+      if (active) {
+        query = Prisma.sql`select T.status, count(*) as 'total' from (
+          SELECT m.id, m.patientId, t.db_date, patient.firstName, patient.lastName,
+          case when(d.id is null) then 'NOT REPORTED' else 'REPORTED' end as 'status'
+          FROM monitoringplan m 
+          inner join doctor doc on doc.userId = ${payload.id} 
+          left join timedimension t on t.db_date = ${strDate}
+          left join dailyreport d on d.monitoringPlanId = m.id and d.createdAt = t.db_date
+          right join patient on patient.id = m.patientId
+          where t.db_date between m.startDate and m.endDate and doc.id = m.doctorId
+          group by m.id, t.db_date) as T group by T.status`;
+      } else {
+        query = Prisma.sql`select T.status, count(*) as 'total' from (
+          SELECT m.id, m.patientId, t.db_date, patient.firstName, patient.lastName,
+          case when(d.id is null) then 'NOT REPORTED' else 'REPORTED' end as 'status'
+          FROM monitoringplan m 
+          inner join doctor doc on doc.userId = ${payload.id} 
+          left join timedimension t on t.db_date = ${strDate}
+          left join dailyreport d on d.monitoringPlanId = m.id and d.createdAt = t.db_date
+          right join patient on patient.id = m.patientId
+          where doc.id = m.doctorId
+          group by m.id, t.db_date) as T group by T.status`;
+      }
+
+      const resume = await manager.client.$queryRaw<any[]>(query);
+
+      return Promise.resolve({ success: true, data: resume });
+    } catch (error) {
+      console.log(error);
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      const message = 'Error al obtener el reporte.';
+      return Promise.reject(new AppError({ message, statusCode: 500 }));
+    }
+  }
 }
