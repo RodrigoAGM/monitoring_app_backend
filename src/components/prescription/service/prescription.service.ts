@@ -37,7 +37,7 @@ export class PrescriptionService {
     }
   }
 
-  async getSelf(payload: Payload, from?: number, to?: number): Promise<Result<Prescription[]>> {
+  async getSelf(payload: Payload, from?: string, to?: string): Promise<Result<Prescription[]>> {
     try {
       // Validate dates
       let fromDate = new Date();
