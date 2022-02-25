@@ -11,25 +11,34 @@ export class ReportService {
     active: Boolean = false,
   ): Promise<Result<any[]>> {
     try {
-      const plans = await manager.client.$queryRaw<any[]>(
-        Prisma.sql`SELECT p.id, p.name, Count(*) as 'count' 
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      let query;
+      if (active) {
+        query = Prisma.sql`SELECT p.id, p.name, Count(*) as 'count' 
         FROM monitoringplan m 
-        inner join prioritytype p  
-        on m.priorityTypeId = p.id
-        inner join doctor d 
-        on d.userId = ${payload.id}
-        where m.doctorId = d.id and 
-        m.endDate >= ${(active) ? new Date() : ''}
-        group by m.priorityTypeId`
-      );
+        inner join prioritytype p on m.priorityTypeId = p.id
+        inner join doctor d on d.userId = ${payload.id}
+        where m.doctorId = d.id and m.endDate >= ${currentDate}
+        and m.startDate <= ${currentDate} group by m.priorityTypeId`;
+      } else {
+        query = Prisma.sql`SELECT p.id, p.name, Count(*) as 'count' 
+        FROM monitoringplan m 
+        inner join prioritytype p on m.priorityTypeId = p.id
+        inner join doctor d on d.userId = ${payload.id}
+        where m.doctorId = d.id group by m.priorityTypeId`;
+      }
+
+      const plans = await manager.client.$queryRaw<any[]>(query);
 
       const count = await manager.client.monitoringPlan.count({
         where: {
           doctor: { userId: payload.id },
           ...(active ? {
-            OR: {
-              endDate: { gte: new Date() },
-              startDate: { lte: new Date() },
+            AND: {
+              endDate: { gte: currentDate },
+              startDate: { lte: currentDate },
             },
           } : {}),
         },
@@ -53,24 +62,33 @@ export class ReportService {
     active: Boolean = false,
   ): Promise<Result<any[]>> {
     try {
-      const plans = await manager.client.$queryRaw<any[]>(
-        Prisma.sql`SELECT e.id, e.name, Count(*) as 'count' 
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      let query;
+      if (active) {
+        query = Prisma.sql`SELECT e.id, e.name, Count(*) as 'count' 
         FROM monitoringplan m 
-        inner join emergencytype e  
-        on m.emergencyTypeId = e.id
-        inner join doctor d 
-        on d.userId = ${payload.id}
-        where m.doctorId = d.id and 
-        m.endDate >= ${(active) ? new Date() : ''}
-        group by m.emergencyTypeId`
-      );
+        inner join emergencytype e on m.emergencyTypeId = e.id
+        inner join doctor d on d.userId = ${payload.id}
+        where m.doctorId = d.id and m.endDate >= ${currentDate}
+        and m.startDate <= ${currentDate} group by m.emergencyTypeId`;
+      } else {
+        query = Prisma.sql`SELECT e.id, e.name, Count(*) as 'count' 
+        FROM monitoringplan m 
+        inner join emergencytype e on m.emergencyTypeId = e.id 
+        inner join doctor d on d.userId = ${payload.id} 
+        where m.doctorId = d.id group by m.emergencyTypeId`;
+      }
+
+      const plans = await manager.client.$queryRaw<any[]>(query);
       const count = await manager.client.monitoringPlan.count({
         where: {
           doctor: { userId: payload.id },
           ...(active ? {
-            OR: {
-              endDate: { gte: new Date() },
-              startDate: { lte: new Date() },
+            AND: {
+              endDate: { gte: currentDate },
+              startDate: { lte: currentDate },
             },
           } : {}),
         },
@@ -97,13 +115,16 @@ export class ReportService {
     try {
       await PriorityTypeValidator.checkIfPriorityExist(priorityId);
 
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
       const patients = await manager.client.monitoringPlan.findMany({
         where: {
           doctor: { userId: payload.id },
           ...(active ? {
-            OR: {
-              endDate: { gte: new Date() },
-              startDate: { lte: new Date() },
+            AND: {
+              endDate: { gte: currentDate },
+              startDate: { lte: currentDate },
             },
           } : {}),
           priorityTypeId: priorityId,
@@ -142,13 +163,16 @@ export class ReportService {
     try {
       await EmergencyTypeValidator.checkIfEmergencyExist(emergencyId);
 
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
       const patients = await manager.client.monitoringPlan.findMany({
         where: {
           doctor: { userId: payload.id },
           ...(active ? {
-            OR: {
-              endDate: { gte: new Date() },
-              startDate: { lte: new Date() },
+            AND: {
+              endDate: { gte: currentDate },
+              startDate: { lte: currentDate },
             },
           } : {}),
           emergencyTypeId: emergencyId,
