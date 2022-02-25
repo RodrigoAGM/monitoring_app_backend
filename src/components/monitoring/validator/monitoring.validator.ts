@@ -48,6 +48,8 @@ export class MonitoringPlanValidator {
     try {
       const start = new Date(startDate);
       const end = new Date(endDate);
+      console.log(start);
+      console.log(end);
 
       if (Number.isNaN(start.getTime())) {
         return Promise.reject(new AppError({
