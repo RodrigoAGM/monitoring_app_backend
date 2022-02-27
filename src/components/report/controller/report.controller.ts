@@ -10,9 +10,15 @@ export async function handleGetPlansByPriorityReport(
 ) {
   try {
     const payload = req.user;
-    const active = req.query.active === 'true';
+    const active = req.query.active ? req.query.active === 'true' : undefined;
 
-    const data = await reportService.getPlansByPriorityReport(payload, active);
+    let parsedFrom;
+    if (req.query.from) {
+      const { from } = req.query;
+      parsedFrom = Number.isNaN(Number(from)) ? from.toString() : Number(from);
+    }
+
+    const data = await reportService.getPlansByPriorityReport(payload, active, parsedFrom);
     res.status(200).send(data);
   } catch (error) {
     next(error);
@@ -26,9 +32,15 @@ export async function handleGetPlansByEmergencyReport(
 ) {
   try {
     const payload = req.user;
-    const active = req.query.active === 'true';
+    const active = req.query.active ? req.query.active === 'true' : undefined;
 
-    const data = await reportService.getPlansByEmergencyReport(payload, active);
+    let parsedFrom;
+    if (req.query.from) {
+      const { from } = req.query;
+      parsedFrom = Number.isNaN(Number(from)) ? from.toString() : Number(from);
+    }
+
+    const data = await reportService.getPlansByEmergencyReport(payload, active, parsedFrom);
     res.status(200).send(data);
   } catch (error) {
     next(error);
@@ -42,10 +54,18 @@ export async function handleGetPatientsByEmergency(
 ) {
   try {
     const payload = req.user;
-    const active = req.query.active === 'true';
+    const active = req.query.active ? req.query.active === 'true' : undefined;
     const emergencyId = Number(req.params.emergencyId);
 
-    const data = await reportService.getPatientsByEmergency(payload, emergencyId, active);
+    let parsedFrom;
+    if (req.query.from) {
+      const { from } = req.query;
+      parsedFrom = Number.isNaN(Number(from)) ? from.toString() : Number(from);
+    }
+
+    const data = await reportService.getPatientsByEmergency(
+      payload, emergencyId, active, parsedFrom
+    );
     res.status(200).send(data);
   } catch (error) {
     next(error);
@@ -59,10 +79,18 @@ export async function handleGetPatientsByPriority(
 ) {
   try {
     const payload = req.user;
-    const active = req.query.active === 'true';
+    const active = req.query.active ? req.query.active === 'true' : undefined;
     const priorityId = Number(req.params.priorityId);
 
-    const data = await reportService.getPatientsByPriority(payload, priorityId, active);
+    let parsedFrom;
+    if (req.query.from) {
+      const { from } = req.query;
+      parsedFrom = Number.isNaN(Number(from)) ? from.toString() : Number(from);
+    }
+
+    const data = await reportService.getPatientsByPriority(
+      payload, priorityId, active, parsedFrom
+    );
     res.status(200).send(data);
   } catch (error) {
     next(error);
@@ -76,9 +104,44 @@ export async function handleGetDailyReportDayResume(
 ) {
   try {
     const payload = req.user;
-    const active = req.query.active === 'true';
+    const active = req.query.active ? req.query.active === 'true' : undefined;
 
-    const data = await reportService.getDailyReportDayResume(payload, active);
+    let parsedFrom;
+    if (req.query.from) {
+      const { from } = req.query;
+      parsedFrom = Number.isNaN(Number(from)) ? from.toString() : Number(from);
+    }
+
+    const data = await reportService.getDailyReportDayResume(payload, active, parsedFrom);
+    res.status(200).send(data);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function handleGetPatientsByStatus(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const payload = req.user;
+    const active = req.query.active ? req.query.active === 'true' : undefined;
+
+    let parsedFrom;
+    let parsedTo;
+    if (req.query.from) {
+      const { from } = req.query;
+      parsedFrom = Number.isNaN(Number(from)) ? from.toString() : Number(from);
+    }
+    if (req.query.to) {
+      const { to } = req.query;
+      parsedTo = Number.isNaN(Number(to)) ? to.toString() : Number(to);
+    }
+
+    const data = await reportService.getPatientsByStatus(
+      payload, active, parsedFrom, parsedTo
+    );
     res.status(200).send(data);
   } catch (error) {
     next(error);

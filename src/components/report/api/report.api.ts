@@ -6,6 +6,7 @@ import {
   handleGetDailyReportDayResume,
   handleGetPatientsByEmergency,
   handleGetPatientsByPriority,
+  handleGetPatientsByStatus,
   handleGetPlansByEmergencyReport,
   handleGetPlansByPriorityReport,
 } from '../controller/report.controller';
@@ -43,10 +44,17 @@ router.get(
 );
 
 router.get(
-  '/patient/status',
+  '/patient/status/resume',
   authenticateToken,
   authenticateRole([Role.DOCTOR]),
   handleGetDailyReportDayResume,
+);
+
+router.get(
+  '/patient/status/',
+  authenticateToken,
+  authenticateRole([Role.DOCTOR]),
+  handleGetPatientsByStatus,
 );
 
 export { router as reportApi };

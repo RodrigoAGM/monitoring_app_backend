@@ -1,18 +1,20 @@
 import { Prisma } from '@prisma/client';
 import AppError from '../../../error/app.error';
 import { Payload, Result } from '../../../types/types';
+import { getDateOnlyStr } from '../../../utils/date.utils';
 import { manager } from '../../../utils/prisma.manager';
 import { EmergencyTypeValidator } from '../../emergencyType/validator/emergency.type.validator';
 import { PriorityTypeValidator } from '../../priority/validator/priority.validator';
+import { validateFromDate, validateToDate } from '../report.validator';
 
 export class ReportService {
   async getPlansByPriorityReport(
     payload: Payload,
-    active: Boolean = false,
+    active: Boolean = true,
+    from?: string | number,
   ): Promise<Result<any[]>> {
     try {
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
+      const currentDate = validateFromDate(from);
 
       let query;
       if (active) {
@@ -59,11 +61,11 @@ export class ReportService {
 
   async getPlansByEmergencyReport(
     payload: Payload,
-    active: Boolean = false,
+    active: Boolean = true,
+    from?: string | number,
   ): Promise<Result<any[]>> {
     try {
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
+      const currentDate = validateFromDate(from);
 
       let query;
       if (active) {
@@ -110,13 +112,13 @@ export class ReportService {
   async getPatientsByPriority(
     payload: Payload,
     priorityId: number,
-    active: Boolean = false,
+    active: Boolean = true,
+    from?: string | number,
   ): Promise<Result<any[]>> {
     try {
       await PriorityTypeValidator.checkIfPriorityExist(priorityId);
 
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
+      const currentDate = validateFromDate(from);
 
       const patients = await manager.client.monitoringPlan.findMany({
         where: {
@@ -158,13 +160,13 @@ export class ReportService {
   async getPatientsByEmergency(
     payload: Payload,
     emergencyId: number,
-    active: Boolean = false,
+    active: Boolean = true,
+    from?: string | number,
   ): Promise<Result<any[]>> {
     try {
       await EmergencyTypeValidator.checkIfEmergencyExist(emergencyId);
 
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
+      const currentDate = validateFromDate(from);
 
       const patients = await manager.client.monitoringPlan.findMany({
         where: {
@@ -205,11 +207,12 @@ export class ReportService {
 
   async getDailyReportDayResume(
     payload: Payload,
-    active: Boolean = false,
+    active: Boolean = true,
+    from?: string | number,
   ): Promise<Result<any[]>> {
     try {
-      const currentDate = new Date();
-      const strDate = `${currentDate.getFullYear()}/${currentDate.getMonth() + 1}/${currentDate.getDate()}`;
+      const currentDate = validateFromDate(from);
+      const strDate = getDateOnlyStr(currentDate);
 
       let query;
       if (active) {
@@ -234,6 +237,58 @@ export class ReportService {
           right join patient on patient.id = m.patientId
           and doc.userId = ${payload.id}
           group by m.id, t.db_date) as T group by T.status`;
+      }
+
+      const resume = await manager.client.$queryRaw<any[]>(query);
+
+      return Promise.resolve({ success: true, data: resume });
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      const message = 'Error al obtener el reporte.';
+      return Promise.reject(new AppError({ message, statusCode: 500 }));
+    }
+  }
+
+  async getPatientsByStatus(
+    payload: Payload,
+    active: Boolean = true,
+    from?: string | number,
+    to?: string | number,
+  ): Promise<Result<any[]>> {
+    try {
+      const fromDate = validateFromDate(from);
+      const toDate = validateToDate(to, fromDate);
+
+      const fromDateStr = getDateOnlyStr(fromDate);
+      const toDateStr = getDateOnlyStr(toDate);
+
+      let query;
+      if (active) {
+        query = Prisma.sql`SELECT m.id as 'monitoringPlanId', m.patientId, patient.userId,
+        t.db_date as 'date', patient.firstName, patient.lastName,
+        case when(d.id is null) then 'NOT REPORTED' else 'REPORTED' end as 'status'
+        FROM monitoringplan m 
+        inner join doctor doc on doc.id = m.doctorId
+        left join timedimension t on t.db_date between ${fromDateStr} and ${toDateStr}
+        left join dailyreport d on d.monitoringPlanId = m.id and DATE(d.createdAt) = t.db_date
+        right join patient on patient.id = m.patientId
+        where t.db_date between m.startDate and m.endDate and doc.userId = ${payload.id}
+        group by m.id, t.db_date
+        order by date asc, monitoringPlanId asc`;
+      } else {
+        query = Prisma.sql`SELECT m.id as 'monitoringPlanId', m.patientId, patient.userId,
+        t.db_date as 'date', patient.firstName, patient.lastName,
+        case when(d.id is null) then 'NOT REPORTED' else 'REPORTED' end as 'status'
+        FROM monitoringplan m 
+        inner join doctor doc on doc.id = m.doctorId
+        left join timedimension t on t.db_date between ${fromDateStr} and ${toDateStr}
+        left join dailyreport d on d.monitoringPlanId = m.id and DATE(d.createdAt) = t.db_date
+        right join patient on patient.id = m.patientId
+        where doc.userId = ${payload.id}
+        group by m.id, t.db_date
+        order by date asc, monitoringPlanId asc`;
       }
 
       const resume = await manager.client.$queryRaw<any[]>(query);
