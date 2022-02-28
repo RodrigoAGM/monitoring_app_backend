@@ -25,7 +25,7 @@ export class UserValidator {
     try {
       const data = await manager.client.user.findFirst({
         where: { identification, ...(role ? { role } : {}) },
-        include: { doctor: true, patient: true },
+        include: { doctor: { include: { medicalCenter: true } }, patient: true },
       });
       return Promise.resolve(data!);
     } catch (error) {

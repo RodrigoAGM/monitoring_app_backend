@@ -100,9 +100,9 @@ model MonitoringPlan {
 
 model DailyReport {
   id               Int            @id @default(autoincrement())
-  temperature      Decimal
-  saturation       Decimal
-  heartRate        Decimal
+  temperature      Decimal?
+  saturation       Decimal?
+  heartRate        Decimal?
   createdAt        DateTime       @default(now())
   monitoringPlan   MonitoringPlan @relation(fields: [monitoringPlanId], references: [id])
   monitoringPlanId Int
