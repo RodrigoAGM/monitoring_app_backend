@@ -8,6 +8,9 @@
   "scripts": {
     "lint": "eslint src --ext .ts",
     "build": "tsc",
+    "copy:package": "node -e \"require('fs').copyFile('./package.json', './dist/package.json', function(err) { if (err) console.log(err); console.log('package.json copied!') })\"",
+    "copy:templates": "node -e \"require('fs-extra').copySync('./src/components/mail/template', './dist/components/mail/template')\"",
+    "postbuild": "run-p copy:package copy:templates",
     "start": "node ./dist/index.js",
     "dev": "nodemon"
   },
