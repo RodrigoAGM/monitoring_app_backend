@@ -62,6 +62,7 @@ export class MailingService {
 
       return Promise.resolve(info);
     } catch (error) {
+      console.log(error);
       return Promise.reject(new AppError({
         message: 'Ocurrió un error al envíar el correo.',
         statusCode: 500,
