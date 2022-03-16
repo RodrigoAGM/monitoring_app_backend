@@ -8,7 +8,7 @@ import {
 import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import AppError from '../../../error/app.error';
-import { Payload, Result, UserTokens } from '../../../types/types';
+import { Result, UserTokens } from '../../../types/types';
 import { manager } from '../../../utils/prisma.manager';
 import { tokenManager } from '../../../utils/token.manager';
 import { MailingService } from '../../mail/service/mail.service';
@@ -327,12 +327,12 @@ export class AuthService {
   }
 
   async updatePassword(
-    payload: Payload,
+    identification: string,
     newPassword: string,
     oldPassword: string,
   ): Promise<Result<string>> {
     try {
-      const user = await UserValidator.checkIfUserExist(payload.id);
+      const user = await UserValidator.checkIfUserExistByIdentification(identification);
 
       // Validate old password
       const isValid = await bcrypt.compare(oldPassword, user.password);
@@ -347,7 +347,7 @@ export class AuthService {
       const hashedNewPass = await bcrypt.hash(newPassword, 10);
 
       await manager.client.user.update({
-        where: { id: payload.id },
+        where: { identification },
         data: {
           password: hashedNewPass,
         },

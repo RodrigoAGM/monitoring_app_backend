@@ -90,10 +90,9 @@ export async function handleRecoverPassword(req: Request, res: Response, next: N
 
 export async function handleUpdatePassword(req: Request, res: Response, next: NextFunction) {
   try {
-    const { oldPassword, newPassword } = req.body;
-    const payload = req.user;
+    const { oldPassword, newPassword, identification } = req.body;
 
-    const data = await authService.updatePassword(payload, newPassword, oldPassword);
+    const data = await authService.updatePassword(identification, newPassword, oldPassword);
     res.status(200).send(clearData(data));
   } catch (error) {
     next(error);

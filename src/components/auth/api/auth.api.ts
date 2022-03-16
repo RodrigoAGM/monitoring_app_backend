@@ -40,11 +40,7 @@ router.delete('/signout/:refreshToken', handleSignOut);
 
 // Recover Password
 router.post('/password/forgot', handleRecoverPassword);
-router.put(
-  '/password/update',
-  authenticateToken,
-  handleUpdatePassword,
-);
+router.put('/password/update', handleUpdatePassword);
 
 // Token
 router.post('/token/refresh', handleRefreshToken);
