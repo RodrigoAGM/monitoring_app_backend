@@ -26,4 +26,46 @@ export class DailyReportValidator {
       return Promise.reject(new AppError({ message: 'Ocurrio un error', statusCode: 500 }));
     }
   }
+
+  static async checkIfExistWithDoctor(id: number, doctorId: number): Promise<DailyReport> {
+    try {
+      const data = await manager.client.dailyReport.findFirst({
+        where: {
+          id,
+          monitoringPlan: { doctor: { userId: doctorId } },
+        },
+      });
+
+      return Promise.resolve(data!);
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({
+        message: 'Ocurrio un al obetener el plan de monitoreo',
+        statusCode: 500,
+      }));
+    }
+  }
+
+  static async checkIfExistWithPatient(id: number, patientId: number): Promise<DailyReport> {
+    try {
+      const data = await manager.client.dailyReport.findFirst({
+        where: {
+          id,
+          monitoringPlan: { patient: { userId: patientId } },
+        },
+      });
+
+      return Promise.resolve(data!);
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({
+        message: 'Ocurrio un error al obetener el plan de monitoreo',
+        statusCode: 500,
+      }));
+    }
+  }
 }

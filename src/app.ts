@@ -12,6 +12,7 @@ import { medicalCenterApi } from './components/medicalCenter/api/emergency.type.
 import { monitoringApi } from './components/monitoring/api/monitoring.api';
 import { reportApi } from './components/report/api/report.api';
 import { prescriptionApi } from './components/prescription/api/prescription.api';
+import { AlertApi } from './components/alert/api/alert.api';
 
 export default class App {
   private app: Application;
@@ -46,6 +47,7 @@ export default class App {
     this.app.use('/monitoring', json(), monitoringApi);
     this.app.use('/report', json(), reportApi);
     this.app.use('/prescription', json(), prescriptionApi);
+    this.app.use('/alert', json(), AlertApi);
     this.app.use(handleError);
   }
 

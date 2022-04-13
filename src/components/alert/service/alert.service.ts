@@ -1,65 +1,63 @@
-import { DailyReport } from '@prisma/client';
-import { PrismaClientValidationError } from '@prisma/client/runtime';
+import { DailyReport, Role } from '@prisma/client';
 import AppError from '../../../error/app.error';
 import { Payload, Result } from '../../../types/types';
 import { clearData } from '../../../utils/clear.response';
-import { getDateOnly } from '../../../utils/date.utils';
 import { manager } from '../../../utils/prisma.manager';
+import { DailyReportValidator } from '../../dailyReport/validator/daily.validator';
 import { MonitoringPlanValidator } from '../../monitoring/validator/monitoring.validator';
 import { UserValidator } from '../../user/validator/user.validator';
 
 export class AlertService {
-  async getSelfDailyReport(
-    selectedDate: Date,
+  async getSelfAlerts(
     payload: Payload,
-    planId: number,
-  ): Promise<Result<DailyReport>> {
+  ): Promise<Result<DailyReport[]>> {
     try {
-      // Validate date
-      let date = new Date(selectedDate);
-      if (Number.isNaN(date.getTime())) {
-        return Promise.reject(new AppError({
-          message: 'La fecha ingresada es inválida.',
-          statusCode: 400,
-        }));
-      }
-
-      date = getDateOnly(date);
-      if (date.getTime() > (new Date()).getTime()) {
-        return Promise.reject(new AppError({
-          message: 'No se puede obetener el reporte de una fecha futura.',
-          statusCode: 400,
-        }));
-      }
-
-      // Check if plan exist
-      await MonitoringPlanValidator.checkIfPlanExistWithPatient(
-        planId, payload.id
-      );
-
-      const data = await manager.client.dailyReport.findFirst({
+      const data = await manager.client.alert.findMany({
         where: {
-          monitoringPlanId: planId,
-          createdAt: date,
+          dailyReport: {
+            monitoringPlan: {
+              ...(payload.role === Role.DOCTOR ? {
+                doctor: { userId: payload.id },
+              } : {}),
+              ...(payload.role === Role.PATIENT ? {
+                patient: { userId: payload.id },
+              } : {}),
+            },
+          },
         },
+        include: {
+          dailyReport: {
+            include: {
+              monitoringPlan: {
+                select: {
+                  emergencyType: true,
+                  priority: true,
+                  ...(payload.role === Role.DOCTOR ? {
+                    patient: {
+                      select: {
+                        id: true, firstName: true, lastName: true, phone: true,
+                      },
+                    },
+                  } : {}),
+                  ...(payload.role === Role.PATIENT ? {
+                    doctor: {
+                      select: {
+                        id: true, firstName: true, lastName: true, phone: true,
+                      },
+                    },
+                  } : {}),
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
       });
-
-      if (data == null) {
-        return Promise.reject(new AppError({
-          message: 'No se encontró un reporte para la fecha indicada.',
-          statusCode: 404,
-        }));
-      }
 
       const cleared = clearData(data);
       return Promise.resolve({ success: true, data: cleared });
     } catch (error) {
-      if (error instanceof PrismaClientValidationError) {
-        return Promise.reject(new AppError({
-          message: 'Es necesario completar los campos obligatorios.',
-          statusCode: 400,
-        }));
-      }
+      console.log(error);
       if (error instanceof AppError) {
         return Promise.reject(error);
       }
@@ -67,52 +65,179 @@ export class AlertService {
     }
   }
 
-  async getDailyReportFromPatient(
-    selectedDate: Date,
-    planId: number,
-    patientId: number,
-  ): Promise<Result<DailyReport>> {
+  async getAlertsFromReport(
+    payload: Payload,
+    reportId: number
+  ): Promise<Result<DailyReport[]>> {
     try {
-      // Validate date
-      let date = new Date(selectedDate);
-      if (Number.isNaN(date.getTime())) {
-        return Promise.reject(new AppError({
-          message: 'La fecha ingresada es inválida.',
-          statusCode: 400,
-        }));
+      // Check if report exist
+      if (payload.role === Role.DOCTOR) {
+        await DailyReportValidator.checkIfExistWithDoctor(reportId, payload.id);
+      } else {
+        await DailyReportValidator.checkIfExistWithPatient(reportId, payload.id);
       }
 
-      date = getDateOnly(date);
-      if (date.getTime() > (new Date()).getTime()) {
-        return Promise.reject(new AppError({
-          message: 'No se puede obetener el reporte de una fecha futura.',
-          statusCode: 400,
-        }));
-      }
-
-      // Check if patient exist
-      await UserValidator.checkIfPatientExist(patientId);
-
-      // Check if plan exist
-      await MonitoringPlanValidator.checkIfPlanExistWithPatient(
-        planId, patientId
-      );
-
-      const data = await manager.client.dailyReport.findFirst({
+      // Check if alerts exist
+      const alerts = await manager.client.alert.findMany({
         where: {
-          monitoringPlanId: planId,
-          createdAt: date,
+          AND: {
+            dailyReport: {
+              monitoringPlan: {
+                ...(payload.role === Role.DOCTOR ? {
+                  doctor: { userId: payload.id },
+                } : {}),
+                ...(payload.role === Role.PATIENT ? {
+                  patient: { userId: payload.id },
+                } : {}),
+              },
+            },
+            dailyReportId: reportId,
+          },
+        },
+        include: {
+          dailyReport: {
+            include: {
+              monitoringPlan: {
+                select: {
+                  emergencyType: true,
+                  priority: true,
+                  ...(payload.role === Role.DOCTOR ? {
+                    patient: {
+                      select: {
+                        id: true, firstName: true, lastName: true, phone: true,
+                      },
+                    },
+                  } : {}),
+                  ...(payload.role === Role.PATIENT ? {
+                    doctor: {
+                      select: {
+                        id: true, firstName: true, lastName: true, phone: true,
+                      },
+                    },
+                  } : {}),
+                },
+              },
+            },
+          },
         },
       });
 
-      if (data == null) {
-        return Promise.reject(new AppError({
-          message: 'El paciente aún no ha emitido un reporte para la fecha indicada.',
-          statusCode: 404,
-        }));
+      const cleared = clearData(alerts ?? []);
+      return Promise.resolve({ success: true, data: cleared });
+    } catch (error) {
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({ message: 'Ocurrio un error', statusCode: 500 }));
+    }
+  }
+
+  async getAlertsFromMonitoringPlan(
+    payload: Payload,
+    planId: number
+  ): Promise<Result<DailyReport[]>> {
+    try {
+      // Check if monitoring plan exist
+      if (payload.role === Role.DOCTOR) {
+        await MonitoringPlanValidator.checkIfPlanExistWithDoctor(planId, payload.id);
+      } else {
+        await MonitoringPlanValidator.checkIfPlanExistWithPatient(planId, payload.id);
       }
 
-      const cleared = clearData(data);
+      // Check if alerts exist
+      const alerts = await manager.client.alert.findMany({
+        where: {
+          dailyReport: {
+            monitoringPlan: {
+              id: planId,
+              ...(payload.role === Role.DOCTOR ? {
+                doctor: { userId: payload.id },
+              } : {}),
+              ...(payload.role === Role.PATIENT ? {
+                patient: { userId: payload.id },
+              } : {}),
+            },
+          },
+        },
+        include: {
+          dailyReport: {
+            include: {
+              monitoringPlan: {
+                select: {
+                  emergencyType: true,
+                  priority: true,
+                  ...(payload.role === Role.DOCTOR ? {
+                    patient: {
+                      select: {
+                        id: true, firstName: true, lastName: true, phone: true,
+                      },
+                    },
+                  } : {}),
+                  ...(payload.role === Role.PATIENT ? {
+                    doctor: {
+                      select: {
+                        id: true, firstName: true, lastName: true, phone: true,
+                      },
+                    },
+                  } : {}),
+
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const cleared = clearData(alerts ?? []);
+      return Promise.resolve({ success: true, data: cleared });
+    } catch (error) {
+      console.log(error);
+      if (error instanceof AppError) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new AppError({ message: 'Ocurrio un error', statusCode: 500 }));
+    }
+  }
+
+  async getAlertsFromPatient(
+    payload: Payload,
+    patientId: number,
+  ): Promise<Result<DailyReport>> {
+    try {
+      // Check if patient exist
+      await UserValidator.checkIfPatientExist(patientId);
+
+      const data = await manager.client.alert.findMany({
+        where: {
+          dailyReport: {
+            monitoringPlan: {
+              doctor: { userId: payload.id },
+              patient: { userId: patientId },
+            },
+          },
+        },
+        include: {
+          dailyReport: {
+            include: {
+              monitoringPlan: {
+                select: {
+                  emergencyType: true,
+                  priority: true,
+                  patient: {
+                    select: {
+                      id: true, firstName: true, lastName: true, phone: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const cleared = clearData(data ?? []);
       return Promise.resolve({ success: true, data: cleared });
     } catch (error) {
       if (error instanceof AppError) {
