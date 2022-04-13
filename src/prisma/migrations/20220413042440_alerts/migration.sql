@@ -1,0 +1,12 @@
+-- CreateTable
+CREATE TABLE `Alert` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `alertType` ENUM('TEMPERATURA', 'RITMO_CARDIACO', 'SATURACION') NOT NULL,
+    `dailyReportId` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `Alert` ADD CONSTRAINT `Alert_dailyReportId_fkey` FOREIGN KEY (`dailyReportId`) REFERENCES `DailyReport`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

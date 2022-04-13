@@ -26,6 +26,12 @@ enum PatientStatus {
   DISCHARGED
 }
 
+enum AlertType {
+  TEMPERATURA
+  RITMO_CARDIACO
+  SATURACION
+}
+
 model Doctor {
   id              Int              @id @default(autoincrement())
   firstName       String
@@ -104,8 +110,17 @@ model DailyReport {
   saturation       Decimal?
   heartRate        Decimal?
   createdAt        DateTime       @default(now())
+  alerts           Alert[]
   monitoringPlan   MonitoringPlan @relation(fields: [monitoringPlanId], references: [id])
   monitoringPlanId Int
+}
+
+model Alert {
+  id            Int         @id @default(autoincrement())
+  createdAt     DateTime    @default(now())
+  alertType     AlertType
+  dailyReport   DailyReport @relation(fields: [dailyReportId], references: [id])
+  dailyReportId Int
 }
 
 model DischargePaper {
