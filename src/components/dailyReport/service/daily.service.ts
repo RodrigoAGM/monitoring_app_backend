@@ -78,6 +78,7 @@ export class DailyReporService {
           heartRate: data.heartRate,
           saturation: data.saturation,
           temperature: data.temperature,
+          discomfort: data.discomfort,
           monitoringPlan: { connect: { id: planId } },
           createdAt: date,
           alerts: {

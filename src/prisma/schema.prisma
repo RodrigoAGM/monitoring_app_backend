@@ -110,6 +110,7 @@ model DailyReport {
   saturation       Decimal?
   heartRate        Decimal?
   createdAt        DateTime       @default(now())
+  discomfort       String?
   alerts           Alert[]
   monitoringPlan   MonitoringPlan @relation(fields: [monitoringPlanId], references: [id])
   monitoringPlanId Int
